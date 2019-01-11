@@ -3,7 +3,7 @@ classdef EEGBrowser < CoreBrowser
         windowWidth = 5;
         normalizeFlag = false;
         showChannelNumber = false;
-        gain = 1;
+        gain = 0.5;
         numberOfChannelsToPlot
         yTickLabel
         colormap = 'lines';
