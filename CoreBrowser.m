@@ -114,8 +114,8 @@ classdef CoreBrowser < handle
             hTextMax = uicontrol('Parent', hFigure, 'Style', 'text','Position',[125+680 14 100 12],'String',obj.timeStamp(end),'HorizontalAlignment','right');
             
             hText2   = uicontrol('Parent', hFigure, 'Style', 'text','Position',[438 81 100 13],'String','Go to event');
-            hNextEvnt = uicontrol('Parent', hFigure, 'Style', 'pushbutton','Position',[543+41 53 40 40],'Callback',@next_Callback,'CData',imgNext);
-            hRevEvnt = uicontrol('Parent', hFigure, 'Style', 'pushbutton','Position',[543 53 40  40],'Callback',@previous_Callback,'CData',imgRev);
+            hNextEvnt = uicontrol('Parent', hFigure, 'Style', 'pushbutton','Position',[543+41 53 40 40],'Callback',@next_Callback,'CData',imgNext,'TooltipString','Go to next event');
+            hRevEvnt = uicontrol('Parent', hFigure, 'Style', 'pushbutton','Position',[543 53 40  40],'Callback',@previous_Callback,'CData',imgRev,'TooltipString','Go to previous event');
             if ~isempty(obj.eventObj.uniqueLabel)
                 hPopUp   = uicontrol('Parent', hFigure, 'Style', 'popup',     'Position',[438 37 100 40],'String',obj.eventObj.uniqueLabel);
             else
