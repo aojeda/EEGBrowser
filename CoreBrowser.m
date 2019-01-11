@@ -109,9 +109,9 @@ classdef CoreBrowser < handle
             hNext    = uicontrol('Parent', hFigure, 'Style', 'pushbutton','Position',[159+41*2 53 40 40],'Callback',@play_fwd_Callback,'CData',imgNext);
             hPref    = uicontrol('Parent', hFigure, 'Style', 'pushbutton','Position',[159+41*3 53 40 40],'Callback',@settings_Callback,'CData',imgPref);
             hSlider  = uicontrol('Parent', hFigure, 'Style', 'slider','Position',[125.13 31 778.87 16],'Callback',@slider_Callback);
-            hText    = uicontrol('Parent', hFigure, 'Style', 'text','Position',[374.13 14 266.87 12],'String','Current latency = ');
-            hTextMin = uicontrol('Parent', hFigure, 'Style', 'text','Position',[125 14 100 12],'String',obj.timeStamp(1),'HorizontalAlignment','left');
-            hTextMax = uicontrol('Parent', hFigure, 'Style', 'text','Position',[125+680 14 100 12],'String',obj.timeStamp(end),'HorizontalAlignment','right');
+            hText    = uicontrol('Parent', hFigure, 'Style', 'text','Position',[374.13 14 266.87 15],'String','Current latency = ');
+            hTextMin = uicontrol('Parent', hFigure, 'Style', 'text','Position',[125 14 100 15],'String',obj.timeStamp(1),'HorizontalAlignment','left');
+            hTextMax = uicontrol('Parent', hFigure, 'Style', 'text','Position',[125+680 14 100 15],'String',obj.timeStamp(end),'HorizontalAlignment','right');
             
             hText2   = uicontrol('Parent', hFigure, 'Style', 'text','Position',[438 81 100 13],'String','Go to event');
             hNextEvnt = uicontrol('Parent', hFigure, 'Style', 'pushbutton','Position',[543+41 53 40 40],'Callback',@next_Callback,'CData',imgNext,'TooltipString','Go to next event');
