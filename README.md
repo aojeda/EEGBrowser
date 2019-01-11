@@ -1,8 +1,11 @@
 # EEGBrowser
+The EEGBrowser is meant to be a modern drop-in replacement for EEGLAB's `eegplot` function based on MoBILAB's visualization functions.
+
+![EEGBrowser](https://github.com/aojeda/EEGBrowser/blob/master/resources/snapshot.png)
 
 Download, uncompress, rename the folder as "EEGBrowser", and place it in your `eeglab/plugins` folder.
 
-![EEGBrowser](https://github.com/aojeda/EEGBrowser/blob/master/resources/snapshot.png)
+Note: Although EEG Browser is based on MoBILAB, the latter is not needed for it to work, although if you have it won't clash.
 
 ## Example
 
