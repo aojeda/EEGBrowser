@@ -2,6 +2,8 @@
 
 Download, uncompress, rename the folder as "EEGBrowser", and place it in your `eeglab/plugins` folder.
 
+![EEGBrowser](https://github.com/aojeda/EEGBrowser/blob/master/resources/snapshot.png)
+
 ## Example
 
 Plot channel data (default)
