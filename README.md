@@ -37,3 +37,27 @@ Other features:
 * Use the `<<` and `>>` keys to move to the next page centered around the selected event marker.
 * Use `-` or `+` buttons to reduce or increase the scale respectively.
 * Click on the figure and use `-` or `+` keys in your keypad to reduce or increase the scale respectively.
+
+## Developers
+
+If you want to extend the capabilities of the EEG Browser follow these steps:
+* Create a class inheriting from `EEGBrowser`, let's call it `MyEEGBrowser`. See example below.
+* Then create your own `pop_myeegbrowser` or modify `pop_eegbrowser` [here](https://github.com/aojeda/EEGBrowser/blob/master/pop_eegbrowser.m#L30) to call your class passing in the EEG structure.
+
+### Example of creating a new browser class ###
+``` matlab
+classdef MyEEGBrowser < EEGBrowser
+    properties
+      % Declare the properties that you need here for plotting.
+      % Properties store data that is used by the class for plotting.
+    end
+
+    %% constructor
+    function obj = MyEEGBrowser(EEG)
+      % Do your thing here. You can for instance add buttons, change default
+      % settings, and so on.
+    end
+end
+```
+
+See [this](https://www.mathworks.com/help/matlab/matlab_oop/create-a-simple-class.html) example for learning more about MATLAB classes.
