@@ -6,7 +6,7 @@ classdef EEGBrowser < CoreBrowser
         gain = 0.5;
         numberOfChannelsToPlot
         yTickLabel
-        colormap = 'lines';
+        colormap = 'eegplot';
         colorInCell
         textHandle;
         isEpoched
