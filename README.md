@@ -26,3 +26,8 @@ To get the handle to the widget (useful for adding your own customizations):
 ```matlab
 hBrowser = pop_eegbrowser(EEG,0);
 ```
+
+Other features:
+* Use the `<<` and `>>` keys to move to the next page centered around the selected event marker.
+* Use `-` or `+` buttons to reduce or increase the scale respectively.
+* Click on the figure and use `-` or `+` keys in your keypad to reduce or increase the scale respectively.
