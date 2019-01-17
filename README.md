@@ -5,7 +5,7 @@ The EEGBrowser is intended to be a modern drop-in replacement for EEGLAB's `eegp
 
 Download, uncompress, rename the folder as "EEGBrowser", and place it in your `eeglab/plugins` folder.
 
-Note: Although EEG Browser is based on MoBILAB, the latter is not needed for it to work, although if you have it won't clash.
+Note: Although EEG Browser is based on [MoBILAB](https://sccn.ucsd.edu/wiki/MoBILAB), the latter is not needed for it to work.
 
 ## Example
 
