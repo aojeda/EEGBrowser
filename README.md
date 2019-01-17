@@ -52,12 +52,31 @@ classdef MyEEGBrowser < EEGBrowser
       % Properties store data that is used by the class for plotting.
     end
 
-    %% constructor
+    % Constructor
     function obj = MyEEGBrowser(EEG)
+
+      % Call EEGBrowser's constructor
+      obj@EEGBrowser(EEG);
+
+      %--
       % Do your thing here. You can for instance add buttons, change default
       % settings, and so on.
+      hButton = uicontrol('Parent', obj.figureHandle,...
+                          'Style', 'pushbutton',...
+                          'TooltipString','This does something',...
+                          'Units','Normalized',...
+                          'Callback',@onPush);
+      %--
     end
 end
-```
 
-See [this](https://www.mathworks.com/help/matlab/matlab_oop/create-a-simple-class.html) example for learning more about MATLAB classes.
+% Define your callbacks
+function onPush(src,evnt)
+  obj = src.Parent.UserData;  % Retrieve your MyEEGBrowser object
+                              % so that you can modify its properties
+  %--
+  % Implement the callback here.
+  %--
+end
+```
+Save the code above in *MyEEGBrowser.m* and that's it. See [this](https://www.mathworks.com/help/matlab/matlab_oop/create-a-simple-class.html) example for learning more about MATLAB classes.
