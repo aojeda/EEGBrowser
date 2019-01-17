@@ -62,6 +62,10 @@ classdef EEGBrowser < CoreBrowser
                 type = {EEG.event.type};
                 for ev=1:length(type), if isnumeric(type{ev}), type{ev} = num2str(type{ev});end;end
                 latency = round(cell2mat({EEG.event.latency}));
+                if obj.isEpoched
+                    latency = [latency [1:obj.dim(2):prod(obj.dim(2:3)) prod(obj.dim(2:3))]];
+                    type = [type repmat({''},1,obj.dim(3)+1)];
+                end
                 obj.streamHandle.event = obj.streamHandle.event.addEvent(latency,type);
             end
             obj.addlistener('channelIndex','PostSet',@EEGBrowser.updateChannelDependencies);
@@ -89,6 +93,16 @@ classdef EEGBrowser < CoreBrowser
             end
             %- topoplot on ButtonDown event
             % set(obj.gObjHandle,'ButtonDownFcn',@gObject_ButtonDownFcn);
+            resFolder = [fileparts(which('EEGBrowser.m')) filesep 'resources'];
+            imgScaleDown = imread([resFolder filesep 'Gnome-list-remove.svg.png']);
+            imgScaleUp = imread([resFolder filesep 'Gnome-list-add.svg.png']);
+            helpIcon = imread([resFolder filesep 'Gnome-help-browser.svg.png']);
+            hDown = uicontrol('Parent', obj.figureHandle, 'Style', 'pushbutton','TooltipString','Scale down','Position',[543+150 53 40 40],'Callback',@onScaleDown,'CData',imgScaleDown);
+            hUp = uicontrol('Parent', obj.figureHandle, 'Style', 'pushbutton','TooltipString','Scale up','Position',[543+190 53 40 40],'Callback',@onScaleUp,'CData',imgScaleUp);
+            hHelp = uicontrol(obj.figureHandle,'CData',helpIcon,'TooltipString','Help','Position',[543+230 53 40 40],'Callback','web(''https://github.com/aojeda/EEGBrowser#eegbrowser'',''-browser'')');
+            set([hDown, hUp hHelp],'Units','Normalized')
+            set(obj.figureHandle,'KeyPressFcn',@onKeyPress);
+            
             obj.plotThisTimeStamp(obj.nowCursor);
         end
         %%
@@ -179,6 +193,8 @@ classdef EEGBrowser < CoreBrowser
                         obj.textHandle(it) = text('Position',textPos(:,it),'String',obj.eventObj.label(loc2(it)),'Color',obj.eventColor(loc2(it),:),...
                             'Parent',obj.axesHandle,'FontSize',12,'FontWeight','bold','Rotation',45);
                     end
+                    boundaryEvents = cellfun(@isempty,obj.eventObj.label(loc2));
+                    set(linesHandler(boundaryEvents),'LineStyle','-.','Color','k','LineWidth',2);
                     set(obj.figureHandle,'CurrentAxes',obj.axesHandle)
                     hold(obj.axesHandle,'off');
                 end
@@ -303,4 +319,31 @@ classdef EEGBrowser < CoreBrowser
             end
         end
     end
+end
+
+%%
+function onKeyPress(src,evnt)
+obj = src.UserData;
+switch evnt.Key
+    case 'leftarrow',  plotStep(obj,-obj.step*obj.speed*2);
+    case 'rightarrow', plotStep(obj,obj.step*obj.speed*2);
+    case 'subtract'
+        obj.gain = obj.gain/2;
+        plotStep(obj,0);
+    case 'add'
+        obj.gain = obj.gain*2;
+        plotStep(obj,0);
+end
+end
+%%
+function onScaleDown(src,evnt)
+obj = src.Parent.UserData;
+obj.gain = obj.gain/2;
+plotStep(obj,0);
+end
+
+function onScaleUp(src,evnt)
+obj = src.Parent.UserData;
+obj.gain = obj.gain*2;
+plotStep(obj,0);
 end

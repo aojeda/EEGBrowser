@@ -116,8 +116,10 @@ classdef CoreBrowser < handle
             hText2   = uicontrol('Parent', hFigure, 'Style', 'text','Position',[438 81 100 13],'String','Go to event');
             hNextEvnt = uicontrol('Parent', hFigure, 'Style', 'pushbutton','Position',[543+41 53 40 40],'Callback',@next_Callback,'CData',imgNext,'TooltipString','Go to next event');
             hRevEvnt = uicontrol('Parent', hFigure, 'Style', 'pushbutton','Position',[543 53 40  40],'Callback',@previous_Callback,'CData',imgRev,'TooltipString','Go to previous event');
-            if ~isempty(obj.eventObj.uniqueLabel)
-                hPopUp   = uicontrol('Parent', hFigure, 'Style', 'popup',     'Position',[438 37 100 40],'String',obj.eventObj.uniqueLabel);
+            uniqueEvents = obj.eventObj.uniqueLabel;
+            uniqueEvents(cellfun(@isempty,uniqueEvents)) = [];
+            if ~isempty(uniqueEvents)
+                hPopUp = uicontrol('Parent', hFigure, 'Style', 'popup', 'Position',[438 37 100 40],'String',uniqueEvents);
             else
                 hPopUp = uicontrol(hFigure,'Position',[438 37 100 40]);
                 set([hNextEvnt hRevEvnt hText2 hPopUp],'Visible','off','Enable','off');
@@ -159,7 +161,7 @@ classdef CoreBrowser < handle
                 set([hRev, hPlay hNext hPref hSlider hText, hTextMin hTextMax ],'Enable','off');
             end
             
-            set(obj.figureHandle,'WindowScrollWheelFcn',@(src, event)onMouseWheelMove(obj,[], event),'KeyPressFcn',@(src, event)onKeyPress(obj,[], event));
+            set(obj.figureHandle,'WindowScrollWheelFcn',@(src, event)onMouseWheelMove(obj,[], event));
             if isa(obj,'mocapBrowserHandle')
                 set(findobj(obj.figureHandle,'tag','connectLine'),'Visible','on');
                 set(findobj(obj.figureHandle,'tag','deleteLine'),'Visible','on');
@@ -192,18 +194,6 @@ classdef CoreBrowser < handle
             % step = -10*obj.speed*(eventObj.VerticalScrollCount*eventObj.VerticalScrollAmount)/obj.streamHandle.samplingRate;%#ok
             step = -(eventObj.VerticalScrollCount*eventObj.VerticalScrollAmount)/obj.streamHandle.samplingRate/2;%#ok
             plotStep(obj,step);%#ok
-        end
-        function onKeyPress(obj,~,eventObj)
-            switch eventObj.Key
-                case 'leftarrow',  plotStep(obj,-obj.step*obj.speed*2);
-                case 'rightarrow', plotStep(obj,obj.step*obj.speed*2);
-                case 'subtract' 
-                    obj.gain = obj.gain/2;
-                    plotStep(obj,0);
-                case 'add'
-                    obj.gain = obj.gain*2;
-                    plotStep(obj,0);
-            end
         end
     end
     %%
@@ -294,8 +284,10 @@ else
     eventObj = browserObj.streamHandle.event;
 end
 ind = get(findobj(get(hObject,'parent'),'style','popupmenu'),'Value');
-if ~isempty(eventObj.label)
-    [~,loc] = ismember( eventObj.label, eventObj.uniqueLabel{ind});
+uniqueEvents = eventObj.uniqueLabel;
+uniqueEvents(cellfun(@isempty,uniqueEvents)) = [];
+if ~isempty(uniqueEvents)
+    [~,loc] = ismember( eventObj.label, uniqueEvents{ind});
     tmp  = eventObj.latencyInFrame(logical(loc));
     tmp2 = browserObj.streamHandle.timeStamp(eventObj.latencyInFrame(logical(loc))) -  browserObj.nowCursor;
     tmp(tmp2>0) = [];
@@ -324,8 +316,10 @@ else
     eventObj = browserObj.streamHandle.event;
 end
 ind = get(findobj(get(hObject,'parent'),'style','popupmenu'),'Value');
-if ~isempty(eventObj.label)
-    [~,loc] = ismember( eventObj.label, eventObj.uniqueLabel{ind});
+uniqueEvents = eventObj.uniqueLabel;
+uniqueEvents(cellfun(@isempty,uniqueEvents)) = [];
+if ~isempty(uniqueEvents)
+    [~,loc] = ismember( eventObj.label, uniqueEvents{ind});
     tmp  = eventObj.latencyInFrame(logical(loc));
     tmp2 = browserObj.streamHandle.timeStamp(eventObj.latencyInFrame(logical(loc))) -  browserObj.nowCursor;
     tmp(tmp2<=0) = [];
