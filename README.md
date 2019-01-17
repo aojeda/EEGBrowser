@@ -3,9 +3,15 @@ The EEGBrowser is intended to be a modern drop-in replacement for EEGLAB's `eegp
 
 ![EEGBrowser](https://github.com/aojeda/EEGBrowser/blob/master/resources/snapshot.png)
 
-Download, uncompress, rename the folder as "EEGBrowser", and place it in your `eeglab/plugins` folder.
+## Install
+* [Download](https://github.com/aojeda/EEGBrowser/archive/master.zip)
+* Uncompress
+* Rename the folder as "EEGBrowser", and place it in your `eeglab/plugins` folder.
+* Run `eeglab` or `eeglab redraw` (if you don't want to clean your current EEG structure)
 
-Note: Although EEG Browser is based on [MoBILAB](https://sccn.ucsd.edu/wiki/MoBILAB), the latter is not needed for it to work.
+![EEGBrowser](https://github.com/aojeda/EEGBrowser/blob/master/resources/snapshot.png)
+
+**Note:** Although EEG Browser is based on [MoBILAB](https://sccn.ucsd.edu/wiki/MoBILAB), the latter is not needed for it to work.
 
 ## Example
 
