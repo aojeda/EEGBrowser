@@ -1,5 +1,5 @@
 # EEGBrowser
-The EEGBrowser is meant to be a modern drop-in replacement for EEGLAB's `eegplot` function based on MoBILAB's visualization functions.
+The EEGBrowser is intended to be a modern drop-in replacement for EEGLAB's `eegplot` function based on [MoBILAB's](https://sccn.ucsd.edu/wiki/MoBILAB) visualization functions.
 
 ![EEGBrowser](https://github.com/aojeda/EEGBrowser/blob/master/resources/snapshot.png)
 
