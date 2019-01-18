@@ -9,15 +9,10 @@ function eegplugin_EEGBrowser(fig,try_strings, catch_strings)
 p = fileparts(which('eegplugin_EEGBrowser'));
 addpath(p);
 hPlot = findobj(fig,'Label','Plot');
-hBrowser = uimenu( hPlot, 'label', 'EEG Browser');
-
+uimenu( hPlot, 'label', 'Channel data (EEG Browser)', 'callback','pop_eegbrowser(EEG);');
+uimenu( hPlot, 'label', 'Component activations (EEG Browser)', 'callback','pop_eegbrowser(EEG,0);');
 labels = get(hPlot.Children,'label');
-n = length(labels);
-ind  = find(ismember(labels,'Channel data (scroll)'));
-idx = [2:ind-1 1 ind:n];
+n = length(hPlot.Children);
+ind  = [find(ismember(labels,'Channel data (scroll)')) find(ismember(labels,'Component activations (scroll)'))];
+idx = [3:n-ind(2)+2 1 ind(2):ind(1)-1 2 ind(1):n];
 hPlot.Children = hPlot.Children(idx);
-
-
-uimenu( hBrowser, 'label', 'Channel data', 'callback','pop_eegbrowser(EEG);');
-uimenu( hBrowser, 'label', 'Component activations', 'callback','pop_eegbrowser(EEG,0);');
-
