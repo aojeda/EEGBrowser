@@ -78,7 +78,7 @@ classdef EEGBrowser < CoreBrowser
         function init(obj)
             init@CoreBrowser(obj);
             set(obj.figureHandle,'Renderer','Painters','CloseRequestFcn',@(src, event)onClose(obj,[], event))
-            set(obj.figureHandle,'name','Scroll channel activities -- pop_eegbrowser(EEG)');
+            set(obj.figureHandle,'name','Scroll activities -- pop_eegbrowser()');
             
             % find now cursor index
             [~,t1] = min(abs(obj.streamHandle.timeStamp(obj.timeIndex) - (obj.nowCursor-obj.windowWidth/2)));  
