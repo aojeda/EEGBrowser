@@ -34,6 +34,7 @@ classdef CoreBrowser < handle
     properties(Hidden=true)
         %timerMult = 0.008;
         timerMult = 0.01;
+        eventLatencyLookUp
     end
     %%
     methods
@@ -86,6 +87,7 @@ classdef CoreBrowser < handle
             end
             
             obj.timeIndex = 1:length(obj.streamHandle.timeStamp);
+            obj.eventLatencyLookUp = griddedInterpolant(obj.timeIndex, obj.streamHandle.timeStamp);
             obj.nowCursor = obj.streamHandle.timeStamp(1)+obj.windowWidth/2;
             obj.channelIndex = 1:obj.dim(1);
             obj.eventObj = obj.streamHandle.event;
@@ -289,17 +291,17 @@ uniqueEvents(cellfun(@isempty,uniqueEvents)) = [];
 if ~isempty(uniqueEvents)
     [~,loc] = ismember( eventObj.label, uniqueEvents{ind});
     tmp  = eventObj.latencyInFrame(logical(loc));
-    tmp2 = browserObj.streamHandle.timeStamp(eventObj.latencyInFrame(logical(loc))) -  browserObj.nowCursor;
+    tmp2 = browserObj.eventLatencyLookUp(eventObj.latencyInFrame(logical(loc))) -  browserObj.nowCursor;
     tmp(tmp2>0) = [];
     tmp2(tmp2>=0) = [];
     [~,loc1] = max(tmp2);
     jumpLatency = tmp(loc1);
     if ~isempty(jumpLatency)
         if browserObj.master == -1
-            set(browserObj.sliderHandle,'Value',browserObj.streamHandle.timeStamp(jumpLatency));
+            set(browserObj.sliderHandle,'Value',browserObj.eventLatencyLookUp(jumpLatency));
             slider_Callback(browserObj.sliderHandle,eventdata);
         else
-            browserObj.master.plotThisTimeStamp(browserObj.streamHandle.timeStamp(jumpLatency));
+            browserObj.master.plotThisTimeStamp(browserObj.eventLatencyLookUp(jumpLatency));
         end
     end
 end
@@ -321,17 +323,17 @@ uniqueEvents(cellfun(@isempty,uniqueEvents)) = [];
 if ~isempty(uniqueEvents)
     [~,loc] = ismember( eventObj.label, uniqueEvents{ind});
     tmp  = eventObj.latencyInFrame(logical(loc));
-    tmp2 = browserObj.streamHandle.timeStamp(eventObj.latencyInFrame(logical(loc))) -  browserObj.nowCursor;
+    tmp2 = browserObj.eventLatencyLookUp(eventObj.latencyInFrame(logical(loc))) -  browserObj.nowCursor;
     tmp(tmp2<=0) = [];
     tmp2(tmp2<=0) = [];
     [~,loc1] = min(tmp2);
     jumpLatency = tmp(loc1);
     if ~isempty(jumpLatency)
         if browserObj.master == -1
-            set(browserObj.sliderHandle,'Value',browserObj.streamHandle.timeStamp(jumpLatency));
+            set(browserObj.sliderHandle,'Value',browserObj.eventLatencyLookUp(jumpLatency));
             slider_Callback(browserObj.sliderHandle,eventdata);
         else
-            browserObj.master.plotThisTimeStamp(browserObj.streamHandle.timeStamp(jumpLatency));
+            browserObj.master.plotThisTimeStamp(browserObj.eventLatencyLookUp(jumpLatency));
         end
     end
 end

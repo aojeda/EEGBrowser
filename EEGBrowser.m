@@ -61,7 +61,7 @@ classdef EEGBrowser < CoreBrowser
             if isfield(EEG.event,'type')
                 type = {EEG.event.type};
                 for ev=1:length(type), if isnumeric(type{ev}), type{ev} = num2str(type{ev});end;end
-                latency = round(cell2mat({EEG.event.latency}));
+                latency = cell2mat({EEG.event.latency});
                 if obj.isEpoched
                     latency = [latency [1:obj.dim(2):prod(obj.dim(2:3)) prod(obj.dim(2:3))]];
                     type = [type repmat({''},1,obj.dim(3)+1)];
@@ -177,23 +177,22 @@ classdef EEGBrowser < CoreBrowser
             
             if obj.showEvents
                 if length(obj.eventObj.latencyInFrame) ~= size(obj.eventColor,1), obj.initEventColor;end
-                [~,loc1,loc2] = intersect(obj.streamHandle.timeStamp(obj.timeIndex(t1:t2)),obj.streamHandle.timeStamp(obj.eventObj.latencyInFrame));
-                Nloc1 = length(loc1);
-                if ~isempty(loc1)
+                loc = find(obj.eventLatencyLookUp(obj.eventObj.latencyInFrame)>obj.streamHandle.timeStamp(obj.timeIndex(t1)) &...
+                    obj.eventLatencyLookUp(obj.eventObj.latencyInFrame)<obj.streamHandle.timeStamp(obj.timeIndex(t2)));
+                if ~isempty(loc)
+                    Nloc = length(loc);
                     hold(obj.axesHandle,'on');
                     set(obj.figureHandle,'CurrentAxes',obj.axesHandle)
-                    ind = obj.timeIndex(t1:t2);
-                    linesHandler = line(ones(2,1)*obj.streamHandle.timeStamp(ind(loc1)),(ones(length(loc1),1)*lim)','Parent',obj.axesHandle);
-                    textPos = [obj.streamHandle.timeStamp(ind(loc1))-0.5*(obj.streamHandle.timeStamp(ind(loc1))-...
-                            obj.streamHandle.timeStamp(ind(loc1)-0));ones(1,Nloc1)*lim(2)*1.01];
+                    linesHandler = line(ones(2,1)*obj.eventLatencyLookUp(obj.eventObj.latencyInFrame(loc)),(ones(length(loc),1)*lim)','Parent',obj.axesHandle);
+                    textPos = [obj.eventLatencyLookUp(obj.eventObj.latencyInFrame(loc));ones(1,Nloc)*lim(2)*1.01];
                     try delete(obj.textHandle);end %#ok
-                    set(linesHandler,{'color'},num2cell(obj.eventColor(loc2,:)',[1 3])');
-                    obj.textHandle = zeros(length(loc1),1);
-                    for it=1:Nloc1
-                        obj.textHandle(it) = text('Position',textPos(:,it),'String',obj.eventObj.label(loc2(it)),'Color',obj.eventColor(loc2(it),:),...
-                            'Parent',obj.axesHandle,'FontSize',12,'FontWeight','bold','Rotation',45);
+                    set(linesHandler,{'color'},num2cell(obj.eventColor(loc,:)',[1 3])');
+                    obj.textHandle = zeros(length(loc),1);
+                    for it=1:Nloc
+                        obj.textHandle(it) = text('Position',textPos(:,it),'String',obj.eventObj.label(loc(it)),'Color',obj.eventColor(loc(it),:),...
+                            'Parent',obj.axesHandle,'FontSize',9,'FontWeight','bold','Rotation',45);
                     end
-                    boundaryEvents = cellfun(@isempty,obj.eventObj.label(loc2));
+                    boundaryEvents = cellfun(@isempty,obj.eventObj.label(loc));
                     set(linesHandler(boundaryEvents),'LineStyle','-.','Color','k','LineWidth',2);
                     set(obj.figureHandle,'CurrentAxes',obj.axesHandle)
                     hold(obj.axesHandle,'off');
