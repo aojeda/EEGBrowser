@@ -2,7 +2,7 @@ classdef EEGBrowser < CoreBrowser
     properties
         windowWidth = 5;
         normalizeFlag = false;
-        showChannelNumber = false;
+        % showChannelNumber = false;
         gain = 0.5;
         numberOfChannelsToPlot
         yTickLabel
@@ -14,6 +14,7 @@ classdef EEGBrowser < CoreBrowser
     end
     properties(SetObservable)
         color
+        showChannelNumber = false;
     end
     methods
         %% constructor
@@ -31,7 +32,7 @@ classdef EEGBrowser < CoreBrowser
             obj.streamHandle.name = EEG.setname;
             obj.streamHandle.timeStamp = (0:ntimePoints-1)/EEG.srate;
             obj.streamHandle.numberOfChannels = obj.dim(1);
-            obj.streamHandle.mmfName = [tempdir filesep obj.streamHandle.name '.bin'];
+            obj.streamHandle.mmfName = [tempname '.bin'];
             precision = class(EEG.data(1));
             fid = fopen(obj.streamHandle.mmfName,'w');
             delta = ceil(0.2*obj.streamHandle.numberOfChannels);
@@ -69,6 +70,7 @@ classdef EEGBrowser < CoreBrowser
                 obj.streamHandle.event = obj.streamHandle.event.addEvent(latency,type);
             end
             obj.addlistener('channelIndex','PostSet',@EEGBrowser.updateChannelDependencies);
+            obj.addlistener('showChannelNumber','PostSet',@EEGBrowser.updateChannelDependencies);
             obj.addlistener('timeIndex','PostSet',@EEGBrowser.updateTimeIndexDenpendencies);
             obj.addlistener('color','PostSet',@EEGBrowser.updateColorInCell);
             obj.master = objMaster;
@@ -76,33 +78,40 @@ classdef EEGBrowser < CoreBrowser
         end
         %% plot
         function init(obj)
-            init@CoreBrowser(obj);
-            set(obj.figureHandle,'Renderer','Painters','CloseRequestFcn',@(src, event)onClose(obj,[], event))
-            set(obj.figureHandle,'name','Scroll activities -- pop_eegbrowser()');
             
-            % find now cursor index
-            [~,t1] = min(abs(obj.streamHandle.timeStamp(obj.timeIndex) - (obj.nowCursor-obj.windowWidth/2)));  
-            [~,t2] = min(abs(obj.streamHandle.timeStamp(obj.timeIndex) - (obj.nowCursor+obj.windowWidth/2)));  
+            % Do not re-create the gui if it already exists
+            if isempty(obj.figureHandle) || ~isvalid(obj.figureHandle)
+                init@CoreBrowser(obj);
+                set(obj.figureHandle,'Renderer','Painters','CloseRequestFcn',@(src, event)onClose(obj,[], event))
+                set(obj.figureHandle,'name','Scroll activities -- pop_eegbrowser()');
+                        
+                %- topoplot on ButtonDown event
+                % set(obj.gObjHandle,'ButtonDownFcn',@gObject_ButtonDownFcn);
+                resFolder = [fileparts(which('EEGBrowser.m')) filesep 'resources'];
+                imgScaleDown = imread([resFolder filesep 'Gnome-list-remove.svg.png']);
+                imgScaleUp = imread([resFolder filesep 'Gnome-list-add.svg.png']);
+                helpIcon = imread([resFolder filesep 'Gnome-help-browser.svg.png']);
+                hDown = uicontrol('Parent', obj.figureHandle, 'Style', 'pushbutton','TooltipString','Scale down','Position',[543+150 53 40 40],'Callback',@onScaleDown,'CData',imgScaleDown);
+                hUp = uicontrol('Parent', obj.figureHandle, 'Style', 'pushbutton','TooltipString','Scale up','Position',[543+190 53 40 40],'Callback',@onScaleUp,'CData',imgScaleUp);
+                hHelp = uicontrol(obj.figureHandle,'CData',helpIcon,'TooltipString','Help','Position',[543+230 53 40 40],'Callback','web(''https://github.com/aojeda/EEGBrowser#eegbrowser'',''-browser'')');
+                set([hDown, hUp hHelp],'Units','Normalized')
+                set(obj.figureHandle,'KeyPressFcn',@onKeyPress);
+            end
+            
+            % Find now cursor index
+            [~,t1] = min(abs(obj.streamHandle.timeStamp(obj.timeIndex) - (obj.nowCursor-obj.windowWidth/2)));
+            [~,t2] = min(abs(obj.streamHandle.timeStamp(obj.timeIndex) - (obj.nowCursor+obj.windowWidth/2)));
             data = obj.streamHandle.mmfObj.Data.x(obj.timeIndex(t1:t2),obj.channelIndex);
-            
             cla(obj.axesHandle);
             hold(obj.axesHandle,'on');
             obj.gObjHandle = plot(obj.axesHandle,obj.streamHandle.timeStamp(obj.timeIndex(t1:t2)),data);
             for it=1:obj.numberOfChannelsToPlot
                 set(obj.gObjHandle(it),'color',obj.color(it,:),'userData',{obj.streamHandle, obj.channelIndex(it)});
             end
-            %- topoplot on ButtonDown event
-            % set(obj.gObjHandle,'ButtonDownFcn',@gObject_ButtonDownFcn);
-            resFolder = [fileparts(which('EEGBrowser.m')) filesep 'resources'];
-            imgScaleDown = imread([resFolder filesep 'Gnome-list-remove.svg.png']);
-            imgScaleUp = imread([resFolder filesep 'Gnome-list-add.svg.png']);
-            helpIcon = imread([resFolder filesep 'Gnome-help-browser.svg.png']);
-            hDown = uicontrol('Parent', obj.figureHandle, 'Style', 'pushbutton','TooltipString','Scale down','Position',[543+150 53 40 40],'Callback',@onScaleDown,'CData',imgScaleDown);
-            hUp = uicontrol('Parent', obj.figureHandle, 'Style', 'pushbutton','TooltipString','Scale up','Position',[543+190 53 40 40],'Callback',@onScaleUp,'CData',imgScaleUp);
-            hHelp = uicontrol(obj.figureHandle,'CData',helpIcon,'TooltipString','Help','Position',[543+230 53 40 40],'Callback','web(''https://github.com/aojeda/EEGBrowser#eegbrowser'',''-browser'')');
-            set([hDown, hUp hHelp],'Units','Normalized')
-            set(obj.figureHandle,'KeyPressFcn',@onKeyPress);
-            
+%             if ~obj.showChannelNumber 
+%                 set(obj.axesHandle,'YTickLabel',obj.yTickLabel);
+%             end
+            set(obj.axesHandle,'YTickLabel',obj.yTickLabel);
             obj.plotThisTimeStamp(obj.nowCursor);
         end
         %%
@@ -199,7 +208,6 @@ classdef EEGBrowser < CoreBrowser
                 end
             end
             set(obj.axesHandle,'YTick',ytick);
-            set(obj.axesHandle,'YTickLabel',obj.yTickLabel);
             set(obj.timeTexttHandle,'String',['Current latency = ' num2str(obj.nowCursor,4) ' sec']);
             set(obj.sliderHandle,'Value',obj.nowCursor);
         end
@@ -257,11 +265,7 @@ classdef EEGBrowser < CoreBrowser
             obj.windowWidth = abs(str2num(properties{4}));          %#ok
             obj.normalizeFlag = logical(str2num(properties{5}));    %#ok
             obj.showChannelNumber = logical(str2num(properties{6}));%#ok
-            
-            showEvents = str2num(properties{7});                    %#ok
-            if ~showEvents
-                obj.eventObj = event;
-            end
+            obj.showEvents = str2num(properties{7});                    %#ok
             obj.changeColormap(properties{8});
             
             figure(obj.figureHandle);

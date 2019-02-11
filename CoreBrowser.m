@@ -16,7 +16,7 @@ classdef CoreBrowser < handle
         timeTexttHandle
         timerObj = [];
         timeStamp
-        font
+        font = struct('size',7,'weight','normal');
         eventObj
         master
     end
@@ -40,8 +40,6 @@ classdef CoreBrowser < handle
     methods
         function obj = CoreBrowser
             obj = obj@handle;
-            obj.font.size = 9;
-            obj.font.weight = 'normal'; % bold
             obj.speed = 1;
             obj.timerObj = timer('TimerFcn',{@playCallback, obj}, 'Period', obj.timerPeriod,...
                 'BusyMode','queue','ExecutionMode','fixedRate');
@@ -93,7 +91,6 @@ classdef CoreBrowser < handle
             obj.eventObj = obj.streamHandle.event;
             
             resFolder = [fileparts(which('CoreBrowser.m')) filesep 'resources'];
-            
             backgroundColor = [0.93 0.96 1];
             fontColor = [0 0 0.4];
             
