@@ -5,7 +5,8 @@ classdef EEGBrowser < CoreBrowser
         % showChannelNumber = false;
         gain = 0.5;
         numberOfChannelsToPlot
-        yTickLabel
+        yTickLabel = [];
+        yTick = [];
         colormap = 'eegplot';
         colorInCell
         textHandle;
@@ -108,10 +109,18 @@ classdef EEGBrowser < CoreBrowser
             for it=1:obj.numberOfChannelsToPlot
                 set(obj.gObjHandle(it),'color',obj.color(it,:),'userData',{obj.streamHandle, obj.channelIndex(it)});
             end
-%             if ~obj.showChannelNumber 
-%                 set(obj.axesHandle,'YTickLabel',obj.yTickLabel);
-%             end
-            set(obj.axesHandle,'YTickLabel',obj.yTickLabel);
+            
+            sigma = nanstd(obj.streamHandle.mmfObj.Data.x);
+            if obj.numberOfChannelsToPlot > 1
+                obj.yTick = (1:obj.numberOfChannelsToPlot)*mean(sigma)/obj.gain;
+                delta = abs(diff(obj.yTick([2 1])));
+                lim = [obj.yTick(1) - delta obj.yTick(end) + delta];
+            else
+                obj.yTick = mean(data);
+                mx = 1.5*max(abs(data));
+                lim = obj.yTick+[-mx mx];
+            end
+            set(obj.axesHandle,'YTickLabel',obj.yTickLabel,'YTick',obj.yTick,'YLim',lim);
             obj.plotThisTimeStamp(obj.nowCursor);
         end
         %%
@@ -137,42 +146,7 @@ classdef EEGBrowser < CoreBrowser
             if t1==t2, return;end
             dt = length(t1:t2)/2;
             data = obj.streamHandle.mmfObj.Data.x(obj.timeIndex(t1:t2),obj.channelIndex);
-            if sum(data(~isnan(data)))
-                if obj.normalizeFlag
-                    [data,~,sigma] = zscore(data);
-                    sigma(isnan(sigma)) = 1;
-                else
-                    [~,mu,sigma] = zscore(data);
-                    mu(isnan(mu)) = 0;
-                    sigma(isnan(sigma)) = 1;
-                    data = data - ones(2*dt,1)*mu;
-                end
-            else
-                sigma = 1;
-            end
-            sigma(sigma == 0) = 1;
-            if obj.numberOfChannelsToPlot > 1
-                ytick = (1:obj.numberOfChannelsToPlot)*mean(sigma)/obj.gain;
-                data = data + ones(2*dt,1)*fliplr(1:obj.numberOfChannelsToPlot)*mean(sigma)/obj.gain;
-                delta = abs(diff(ytick([2 1])));
-                lim = [ytick(1) - delta ytick(end) + delta];
-            elseif obj.numberOfChannelsToPlot == 1 && obj.streamHandle.numberOfChannels > 1
-                data = data/max([data; eps]);
-                ytick = mean(data);
-                mx = 1.5*max(abs(data));
-                lim = [ytick - mx ytick + mx];
-            else
-                if sum(data(:))
-                    data = data./max(abs(data));
-                    ytick = min(abs([min(data(:)) max(data(:))]));
-                    lim = [ytick-max(abs(data))*1.5 ytick+max(abs(data))*1.5];
-                else
-                    ytick = 0;
-                    lim = [-1 1];
-                end
-            end
-            if sum(data(:)) == 0, ytick = 0; lim = [-1 1];end
-            
+            data = obj.gain*data + ones(2*dt,1)*fliplr(obj.yTick);
             if obj.numberOfChannelsToPlot <= 1
                 data = {data};
             elseif obj.numberOfChannelsToPlot == 2
@@ -182,13 +156,13 @@ classdef EEGBrowser < CoreBrowser
             end
             set(obj.gObjHandle,'XData',obj.streamHandle.timeStamp(obj.timeIndex(t1:t2)),{'YData'},data,{'Color'},obj.colorInCell);           
             xlim(obj.axesHandle,obj.streamHandle.timeStamp(obj.timeIndex([t1 t2])));
-            ylim(obj.axesHandle,lim);  % static limit
             
             if obj.showEvents
                 if length(obj.eventObj.latencyInFrame) ~= size(obj.eventColor,1), obj.initEventColor;end
                 loc = find(obj.eventLatencyLookUp(obj.eventObj.latencyInFrame)>obj.streamHandle.timeStamp(obj.timeIndex(t1)) &...
                     obj.eventLatencyLookUp(obj.eventObj.latencyInFrame)<obj.streamHandle.timeStamp(obj.timeIndex(t2)));
                 if ~isempty(loc)
+                    lim = ylim();
                     Nloc = length(loc);
                     hold(obj.axesHandle,'on');
                     set(obj.figureHandle,'CurrentAxes',obj.axesHandle)
@@ -207,7 +181,6 @@ classdef EEGBrowser < CoreBrowser
                     hold(obj.axesHandle,'off');
                 end
             end
-            set(obj.axesHandle,'YTick',ytick);
             set(obj.timeTexttHandle,'String',['Current latency = ' num2str(obj.nowCursor,4) ' sec']);
             set(obj.sliderHandle,'Value',obj.nowCursor);
         end
