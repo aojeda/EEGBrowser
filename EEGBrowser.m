@@ -12,10 +12,14 @@ classdef EEGBrowser < CoreBrowser
         textHandle;
         isEpoched
         dim
+        trialSelection = [];
     end
     properties(SetObservable)
         color
         showChannelNumber = false;
+    end
+    properties(SetAccess=private)
+        hRec = [];
     end
     methods
         %% constructor
@@ -92,11 +96,15 @@ classdef EEGBrowser < CoreBrowser
                 imgScaleDown = imread([resFolder filesep 'Gnome-list-remove.svg.png']);
                 imgScaleUp = imread([resFolder filesep 'Gnome-list-add.svg.png']);
                 helpIcon = imread([resFolder filesep 'Gnome-help-browser.svg.png']);
+                selectIcon = imread([resFolder filesep 'selectTrial.png']);
                 hDown = uicontrol('Parent', obj.figureHandle, 'Style', 'pushbutton','TooltipString','Scale down','Position',[543+150 53 40 40],'Callback',@onScaleDown,'CData',imgScaleDown);
                 hUp = uicontrol('Parent', obj.figureHandle, 'Style', 'pushbutton','TooltipString','Scale up','Position',[543+190 53 40 40],'Callback',@onScaleUp,'CData',imgScaleUp);
                 hHelp = uicontrol(obj.figureHandle,'CData',helpIcon,'TooltipString','Help','Position',[543+230 53 40 40],'Callback','web(''https://github.com/aojeda/EEGBrowser#eegbrowser'',''-browser'')');
                 set([hDown, hUp hHelp],'Units','Normalized')
                 set(obj.figureHandle,'KeyPressFcn',@onKeyPress);
+                toolbarHandle = findall(obj.figureHandle,'Type','uitoolbar');
+                hcb = uitoggletool(toolbarHandle,'CData',selectIcon,'Separator','on','HandleVisibility','off','TooltipString','Select','State','off');
+                set(hcb,'OnCallback',@(src,event)enableTrialSelection(obj,hcb,'select'),'OffCallback',@(src, event)enableTrialSelection(obj,hcb,'remove'));
             end
             
             % Find now cursor index
@@ -235,10 +243,13 @@ classdef EEGBrowser < CoreBrowser
             obj.channelIndex = str2num(properties{2});              %#ok
             tmp = str2double(properties{3});
             obj.speed = interp1(1:5,1:5,tmp,'nearest','extrap');
-            obj.windowWidth = abs(str2num(properties{4}));          %#ok
+            obj.windowWidth = abs(str2num(properties{4}));
+            if obj.windowWidth > obj.streamHandle.timeStamp(obj.timeIndex(end))
+                obj.windowWidth = obj.streamHandle.timeStamp(obj.timeIndex(end));
+            end
             obj.normalizeFlag = logical(str2num(properties{5}));    %#ok
             obj.showChannelNumber = logical(str2num(properties{6}));%#ok
-            obj.showEvents = str2num(properties{7});                    %#ok
+            obj.showEvents = str2num(properties{7});                %#ok
             obj.changeColormap(properties{8});
             
             figure(obj.figureHandle);
@@ -322,4 +333,46 @@ function onScaleUp(src,evnt)
 obj = src.Parent.UserData;
 obj.gain = obj.gain*2;
 plotStep(obj,0);
+end
+
+function enableTrialSelection(obj,evnt,state)
+if strcmp(state,'select')
+    set(obj.axesHandle,'ButtonDownFcn',@selectTrial);
+else
+    set(obj.axesHandle,'ButtonDownFcn','');
+end
+end
+
+function selectTrial(src,evnt)
+obj = src.Parent.UserData;
+if ~obj.isEpoched
+    return;
+end
+boundary = find(cellfun(@isempty,obj.eventObj.label));
+b1 = find(obj.eventLatencyLookUp(obj.eventObj.latencyInFrame(boundary)) < evnt.IntersectionPoint(1),1,'last');
+if isempty(b1)
+    b1 = 1;
+    trial = 1;
+else
+    trial = b1;
+end
+if any(ismember(obj.trialSelection,trial))
+    return;
+end
+b2 = b1+1;
+obj.trialSelection = sort([obj.trialSelection trial]);
+disp(['Selection: ' num2str(obj.trialSelection)]);
+x = obj.eventLatencyLookUp(obj.eventObj.latencyInFrame(boundary(b1)));
+w = obj.eventLatencyLookUp(obj.eventObj.latencyInFrame(boundary(b2)));
+y = obj.axesHandle.YLim(1);
+h = obj.axesHandle.YLim(2);
+patch('Parent',obj.axesHandle,'XData',[x w w x],'YData',[y y h h],'FaceColor',[0.75 0.75 0.75],...
+    'FaceAlpha',0.5,'lineStyle','none','UserData', trial,'ButtonDownFcn',@removeSel);
+end
+
+function removeSel(src,evnt)
+obj = src.Parent.Parent.UserData;
+obj.trialSelection(obj.trialSelection==src.UserData) = [];
+disp(['Selection: ' num2str(obj.trialSelection)]);
+delete(src);
 end
