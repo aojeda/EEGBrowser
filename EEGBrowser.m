@@ -103,8 +103,9 @@ classdef EEGBrowser < CoreBrowser
                 set([hDown, hUp hHelp],'Units','Normalized')
                 set(obj.figureHandle,'KeyPressFcn',@onKeyPress);
                 toolbarHandle = findall(obj.figureHandle,'Type','uitoolbar');
-                hcb = uitoggletool(toolbarHandle,'CData',selectIcon,'Separator','on','HandleVisibility','off','TooltipString','Select','State','off');
+                hcb = uitoggletool(toolbarHandle,'CData',selectIcon,'Separator','on','HandleVisibility','off','TooltipString','Select trial','State','off');
                 set(hcb,'OnCallback',@(src,event)enableTrialSelection(obj,hcb,'select'),'OffCallback',@(src, event)enableTrialSelection(obj,hcb,'remove'));
+                set(obj.axesHandle,'ButtonDownFcn',@selectTrial);
             end
             
             % Find now cursor index
@@ -361,6 +362,7 @@ if any(ismember(obj.trialSelection,trial))
 end
 b2 = b1+1;
 obj.trialSelection = sort([obj.trialSelection trial]);
+assignin('base','trialSelection',obj.trialSelection);
 disp(['Selection: ' num2str(obj.trialSelection)]);
 x = obj.eventLatencyLookUp(obj.eventObj.latencyInFrame(boundary(b1)));
 w = obj.eventLatencyLookUp(obj.eventObj.latencyInFrame(boundary(b2)));
@@ -373,6 +375,7 @@ end
 function removeSel(src,evnt)
 obj = src.Parent.Parent.UserData;
 obj.trialSelection(obj.trialSelection==src.UserData) = [];
+assignin('base','trialSelection',obj.trialSelection);
 disp(['Selection: ' num2str(obj.trialSelection)]);
 delete(src);
 end
