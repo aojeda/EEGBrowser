@@ -27,10 +27,7 @@ if icacomp==0 && ~isempty(EEG.icaact)
     end
     EEG = EEG_ica;
 elseif icacomp==0 && isempty(EEG.icaact)
-    % runica (EEGLAB v2019.1), when called from script, leaves EEG.icaact
-    % empty but fills in necessary information to get component data from 
-    % line below. FYI: The line is the same found in EEGLAB pop_eegplot,
-    % line 201.
+    % Fixes EEG.icaact being empty after runnin ICA from script
     EEG.data = eeg_getdatact(EEG, 'component', [1:size(EEG.icaweights,1)]);
 end
 obj = EEGBrowser(EEG);
