@@ -26,5 +26,8 @@ if icacomp==0 && ~isempty(EEG.icaact)
             'urchan', []);
     end
     EEG = EEG_ica;
+elseif icacomp==0 && isempty(EEG.icaact)
+    % Fixes EEG.icaact being empty after runnin ICA from script
+    EEG.data = eeg_getdatact(EEG, 'component', [1:size(EEG.icaweights,1)]);
 end
 obj = EEGBrowser(EEG);
