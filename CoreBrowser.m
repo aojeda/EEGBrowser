@@ -94,8 +94,15 @@ classdef CoreBrowser < handle
             backgroundColor = [0.93 0.96 1];
             fontColor = [0 0 0.4];
             
+            scUnits = get(0,'units');
+            set(0,'units','pixels');
+            scSize = get(0, 'screensize');
+            set(0,'units',scUnits);
+            winWidth = 950;
+            winHeight = 530;
+
             hFigure = figure('Color',backgroundColor);
-            hFigure.Position(3:4) = [950 530];
+            hFigure.Position = [(scSize(3)-winWidth)/2 (scSize(4)-winHeight)/2 winWidth winHeight];
             hAxes = axes(hFigure,'Position',[0.1300 0.2302 0.8184 0.6948], 'Box','on');
             
             imgRev   = imread([resFolder filesep '32px-Gnome-media-seek-backward.svg.png']);
