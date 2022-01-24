@@ -84,6 +84,7 @@ end
 Save the code above in *MyEEGBrowser.m* and that's it. See [this](https://www.mathworks.com/help/matlab/matlab_oop/create-a-simple-class.html) example for learning more about MATLAB classes.
 
 ## Version history
+* v1.2 - fix a bug that caused the browser to be misplaced on some display configurations
 * v1.1 - fix issue associated with modified EEGLAB menu in development branch
 * v1.0 - initial release
 
